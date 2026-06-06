@@ -34,10 +34,16 @@ export default function EventsPage() {
     load();
   }, [load]);
 
+  useEffect(() => {
+    if (status !== 'open') {
+      setOnlyWithoutPrediction(false);
+    }
+  }, [status]);
+
   const visibleEvents = useMemo(() => {
-    if (!onlyWithoutPrediction) return events;
+    if (status !== 'open' || !onlyWithoutPrediction) return events;
     return events.filter((item) => !item.my_prediction);
-  }, [events, onlyWithoutPrediction]);
+  }, [events, onlyWithoutPrediction, status]);
 
   return (
     <div className="page">
@@ -54,14 +60,16 @@ export default function EventsPage() {
         ))}
       </div>
 
-      <label className="filter-checkbox">
-        <input
-          type="checkbox"
-          checked={onlyWithoutPrediction}
-          onChange={(e) => setOnlyWithoutPrediction(e.target.checked)}
-        />
-        Sadece tahmin yapmadığım eventleri göster
-      </label>
+      {status === 'open' && (
+        <label className="filter-checkbox">
+          <input
+            type="checkbox"
+            checked={onlyWithoutPrediction}
+            onChange={(e) => setOnlyWithoutPrediction(e.target.checked)}
+          />
+          Sadece tahmin yapmadığım eventleri göster
+        </label>
+      )}
 
       {loading && (
         <div className="center-inline">
@@ -73,7 +81,7 @@ export default function EventsPage() {
 
       {!loading && !error && visibleEvents.length === 0 && (
         <p className="empty">
-          {onlyWithoutPrediction
+          {status === 'open' && onlyWithoutPrediction
             ? 'Tahmin yapmadığınız event kalmadı.'
             : 'Bu kategoride event yok.'}
         </p>
