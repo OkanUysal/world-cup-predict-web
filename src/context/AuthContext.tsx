@@ -75,8 +75,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }) => {
       const res = await api.login(data);
       applySession(res);
+      await refreshProfile();
     },
-    [applySession],
+    [applySession, refreshProfile],
   );
 
   const register = useCallback(
@@ -87,8 +88,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }) => {
       const res = await api.register(data);
       applySession(res);
+      await refreshProfile();
     },
-    [applySession],
+    [applySession, refreshProfile],
   );
 
   const logout = useCallback(() => {

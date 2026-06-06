@@ -29,11 +29,6 @@ export default function LeaderboardPage() {
 
   return (
     <div className="page">
-      <header className="page-header">
-        <h1>Sıralama</h1>
-        <p className="muted">Kanal içi puan tablosu</p>
-      </header>
-
       {loading && (
         <div className="center-inline">
           <div className="spinner" />

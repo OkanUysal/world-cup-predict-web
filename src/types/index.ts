@@ -1,8 +1,15 @@
+export interface Channel {
+  id: string;
+  code: string;
+  name: string;
+}
+
 export interface UserProfile {
   id: string;
   name: string;
   role: 'user' | 'admin';
   channel_id?: string;
+  channel?: Channel;
   total_points?: number;
 }
 

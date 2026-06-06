@@ -12,14 +12,13 @@ export default function ProfilePage() {
 
   return (
     <div className="page">
-      <header className="page-header">
-        <h1>Profil</h1>
-      </header>
-
       {user && (
         <div className="card profile-card">
           <div className="avatar">{user.name.charAt(0).toUpperCase()}</div>
           <h2>{user.name}</h2>
+          {user.channel && (
+            <p className="muted">{user.channel.name}</p>
+          )}
           <p className="muted">Rol: {user.role === 'admin' ? 'Admin' : 'Kullanıcı'}</p>
           {user.total_points !== undefined && (
             <p className="points-big">{user.total_points} puan</p>

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { api } from '../api/client';
 import EventCard from '../components/EventCard';
 import type { EventStatusFilter, EventWithPrediction } from '../types';
@@ -14,6 +14,7 @@ export default function EventsPage() {
   const [events, setEvents] = useState<EventWithPrediction[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [onlyWithoutPrediction, setOnlyWithoutPrediction] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -33,12 +34,13 @@ export default function EventsPage() {
     load();
   }, [load]);
 
+  const visibleEvents = useMemo(() => {
+    if (!onlyWithoutPrediction) return events;
+    return events.filter((item) => !item.my_prediction);
+  }, [events, onlyWithoutPrediction]);
+
   return (
     <div className="page">
-      <header className="page-header">
-        <h1>Tahminler</h1>
-      </header>
-
       <div className="tabs inline-tabs">
         {TABS.map((t) => (
           <button
@@ -52,6 +54,15 @@ export default function EventsPage() {
         ))}
       </div>
 
+      <label className="filter-checkbox">
+        <input
+          type="checkbox"
+          checked={onlyWithoutPrediction}
+          onChange={(e) => setOnlyWithoutPrediction(e.target.checked)}
+        />
+        Sadece tahmin yapmadığım eventleri göster
+      </label>
+
       {loading && (
         <div className="center-inline">
           <div className="spinner" />
@@ -60,12 +71,16 @@ export default function EventsPage() {
 
       {error && !loading && <div className="error-box">{error}</div>}
 
-      {!loading && !error && events.length === 0 && (
-        <p className="empty">Bu kategoride event yok.</p>
+      {!loading && !error && visibleEvents.length === 0 && (
+        <p className="empty">
+          {onlyWithoutPrediction
+            ? 'Tahmin yapmadığınız event kalmadı.'
+            : 'Bu kategoride event yok.'}
+        </p>
       )}
 
       <div className="event-list">
-        {events.map((item) => (
+        {visibleEvents.map((item) => (
           <EventCard
             key={item.event.id}
             item={item}
