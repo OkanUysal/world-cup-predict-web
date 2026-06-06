@@ -4,6 +4,7 @@ import Layout from './components/Layout';
 import AuthPage from './pages/AuthPage';
 import EventsPage from './pages/EventsPage';
 import LeaderboardPage from './pages/LeaderboardPage';
+import EventChannelPage from './pages/EventChannelPage';
 import ProfilePage from './pages/ProfilePage';
 
 export default function App() {
@@ -15,6 +16,7 @@ export default function App() {
           <Route element={<Layout />}>
             <Route index element={<Navigate to="/events" replace />} />
             <Route path="/events" element={<EventsPage />} />
+            <Route path="/events/:id/channel" element={<EventChannelPage />} />
             <Route path="/leaderboard" element={<LeaderboardPage />} />
             <Route path="/profile" element={<ProfilePage />} />
           </Route>

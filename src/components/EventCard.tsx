@@ -1,23 +1,32 @@
 import { FormEvent, useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { api } from '../api/client';
-import type { EventWithPrediction, Prediction } from '../types';
+import type { EventWithPrediction } from '../types';
 import {
   eventTypeLabel,
   formatChoice,
   formatDate,
+  formatResult,
+  pointsClass,
   statusLabel,
 } from '../utils/date';
 
 interface Props {
   item: EventWithPrediction;
   onUpdated: () => void;
+  linkToChannel?: boolean;
 }
 
-export default function EventCard({ item, onUpdated }: Props) {
+export default function EventCard({
+  item,
+  onUpdated,
+  linkToChannel = false,
+}: Props) {
   const { event, my_prediction } = item;
   const meta = event.metadata;
   const teams = Array.isArray(meta.teams) ? (meta.teams as string[]) : [];
   const canPredict = event.status === 'open';
+  const isCompleted = event.status === 'completed';
 
   const [homeScore, setHomeScore] = useState('');
   const [awayScore, setAwayScore] = useState('');
@@ -25,10 +34,6 @@ export default function EventCard({ item, onUpdated }: Props) {
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState('');
   const [savedMsg, setSavedMsg] = useState('');
-  const [channelPredictions, setChannelPredictions] = useState<Prediction[]>(
-    [],
-  );
-  const [loadingChannel, setLoadingChannel] = useState(false);
 
   useEffect(() => {
     if (my_prediction) {
@@ -47,19 +52,6 @@ export default function EventCard({ item, onUpdated }: Props) {
     setSubmitError('');
     setSavedMsg('');
   }, [item]);
-
-  useEffect(() => {
-    if (event.status === 'open') {
-      setChannelPredictions([]);
-      return;
-    }
-    setLoadingChannel(true);
-    api
-      .getEventPredictions(event.id)
-      .then((data) => setChannelPredictions(data ?? []))
-      .catch(() => setChannelPredictions([]))
-      .finally(() => setLoadingChannel(false));
-  }, [event.id, event.status]);
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
@@ -87,8 +79,8 @@ export default function EventCard({ item, onUpdated }: Props) {
     }
   }
 
-  return (
-    <article className="event-card">
+  const body = (
+    <>
       <div className="event-card-header">
         <span className={`badge badge-${event.status}`}>
           {statusLabel(event.status)}
@@ -105,6 +97,13 @@ export default function EventCard({ item, onUpdated }: Props) {
       )}
 
       <p className="deadline">Son tarih: {formatDate(event.deadline)}</p>
+
+      {isCompleted && event.result && (
+        <p className="event-result">
+          <strong>Sonuç:</strong>{' '}
+          {formatResult(event.type, event.result)}
+        </p>
+      )}
 
       {canPredict && (
         <form className="inline-prediction" onSubmit={handleSubmit}>
@@ -156,16 +155,10 @@ export default function EventCard({ item, onUpdated }: Props) {
             </label>
           )}
 
-          {submitError && (
-            <p className="inline-error">{submitError}</p>
-          )}
+          {submitError && <p className="inline-error">{submitError}</p>}
           {savedMsg && <p className="inline-success">{savedMsg}</p>}
 
-          <button
-            type="submit"
-            className="btn-save"
-            disabled={submitting}
-          >
+          <button type="submit" className="btn-save" disabled={submitting}>
             {submitting
               ? 'Kaydediliyor…'
               : my_prediction
@@ -176,10 +169,14 @@ export default function EventCard({ item, onUpdated }: Props) {
       )}
 
       {!canPredict && my_prediction && (
-        <p className="my-prediction">
+        <p
+          className={`my-prediction ${
+            isCompleted ? pointsClass(my_prediction.points_awarded) : ''
+          }`}
+        >
           Tahminin: {formatChoice(event.type, my_prediction.choice)}
-          {event.status === 'completed' && (
-            <span className="points">
+          {isCompleted && (
+            <span className="points-label">
               {' '}
               · {my_prediction.points_awarded} puan
             </span>
@@ -187,32 +184,26 @@ export default function EventCard({ item, onUpdated }: Props) {
         </p>
       )}
 
-      {!canPredict && (
-        <div className="channel-predictions">
-          <p className="channel-title">Kanal tahminleri</p>
-          {loadingChannel && (
-            <p className="muted small">Yükleniyor…</p>
-          )}
-          {!loadingChannel && channelPredictions.length === 0 && (
-            <p className="muted small">Henüz tahmin yok.</p>
-          )}
-          {!loadingChannel && channelPredictions.length > 0 && (
-            <ul className="prediction-list compact">
-              {channelPredictions.map((p) => (
-                <li key={p.id}>
-                  <span className="user-name">
-                    {p.user_name ?? 'Kullanıcı'}
-                  </span>
-                  <span>{formatChoice(event.type, p.choice)}</span>
-                  {event.status === 'completed' && (
-                    <span className="points">{p.points_awarded}p</span>
-                  )}
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
+      {!canPredict && !my_prediction && (
+        <p className="muted small no-prediction">Tahmin girmedin</p>
       )}
-    </article>
+
+      {linkToChannel && (
+        <p className="card-hint">Kanal tahminleri →</p>
+      )}
+    </>
   );
+
+  if (linkToChannel) {
+    return (
+      <Link
+        to={`/events/${event.id}/channel`}
+        className="event-card event-card-link"
+      >
+        {body}
+      </Link>
+    );
+  }
+
+  return <article className="event-card">{body}</article>;
 }

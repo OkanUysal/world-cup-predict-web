@@ -66,7 +66,12 @@ export default function EventsPage() {
 
       <div className="event-list">
         {events.map((item) => (
-          <EventCard key={item.event.id} item={item} onUpdated={load} />
+          <EventCard
+            key={item.event.id}
+            item={item}
+            onUpdated={load}
+            linkToChannel={status !== 'open'}
+          />
         ))}
       </div>
     </div>

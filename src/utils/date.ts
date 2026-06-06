@@ -51,3 +51,14 @@ export function formatChoice(
   if (choice.team) return String(choice.team);
   return JSON.stringify(choice);
 }
+
+export function formatResult(
+  type: string,
+  result: Record<string, unknown>,
+): string {
+  return formatChoice(type, result);
+}
+
+export function pointsClass(points: number): 'points-won' | 'points-zero' {
+  return points > 0 ? 'points-won' : 'points-zero';
+}
