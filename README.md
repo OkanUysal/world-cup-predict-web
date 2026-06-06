@@ -15,14 +15,12 @@ Console'da `API base URL: https://...` görünmeli.
 
 > **CORS:** `flutter run` ile Chrome farklı origin'den istek atar. Backend'in `http://localhost:*` için CORS açması gerekir. curl çalışsa bile tarayıcı engelleyebilir.
 
-## Railway deploy (Docker yok — doğrudan build)
+## Railway deploy (Nixpacks)
 
 1. GitHub'a push
-2. Railway → bu repo → deploy
-3. Nixpacks `scripts/railway-build.sh` ile Flutter web build alır
-4. `serve` ile `build/web` static serve edilir
-
-Railway servis ayarında **Builder: Nixpacks** olmalı (Dockerfile değil).
+2. Railway → servis → Settings → **Builder: Nixpacks**
+3. Deploy — build komutları `nixpacks.toml` içinde (Flutter clone + `flutter build web`)
+4. `serve` ile `build/web` sunulur
 
 ### Backend CORS (önemli)
 

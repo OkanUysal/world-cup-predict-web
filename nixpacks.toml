@@ -1,11 +1,17 @@
 [phases.setup]
-nixPkgs = ["nodejs", "git", "curl", "bash"]
-
-[phases.install]
-cmds = ["chmod +x scripts/railway-build.sh"]
+nixPkgs = ["nodejs", "git", "curl", "bash", "unzip"]
+aptPkgs = ["ca-certificates", "curl", "git", "unzip", "xz-utils", "zip", "libglu1-mesa"]
 
 [phases.build]
-cmds = ["bash scripts/railway-build.sh"]
+cmds = [
+  "git clone https://github.com/flutter/flutter.git -b stable --depth 1 /tmp/flutter",
+  "export PATH=\"/tmp/flutter/bin:$PATH\"",
+  "flutter config --enable-web --no-analytics",
+  "flutter precache --web",
+  "flutter --version",
+  "flutter pub get",
+  "flutter build web --release",
+]
 
 [start]
 cmd = "npx --yes serve -s build/web -l ${PORT:-8080}"
