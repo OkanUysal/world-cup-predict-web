@@ -1,30 +1,34 @@
 # Dünya Kupası Tahmin — Web
 
-Flutter Web · Riverpod · Dio
+## Ortamlar
 
-Backend: `https://world-cup-predict-be-production.up.railway.app/api/v1`
+| Ortam | API URL | CORS |
+|-------|---------|------|
+| `flutter run` (local debug) | Doğrudan backend | Backend localhost izni gerekir |
+| Railway / `npm start` (release) | `/api/v1` proxy | Gerekmez |
 
-## Yerel geliştirme
+## Local debug
 
 ```bash
-flutter pub get
 flutter run -d chrome
 ```
 
-## Railway deploy
+CORS hatası normal — backend `http://localhost:*` açmalı.
 
-Build localde, Railway `package.json` ile `build/web` dosyalarını serve eder.
+## Railway deploy
 
 ```bash
 flutter build web --release
-git add build/web package.json
-git commit -m "build web"
+git add build/web lib server.js package.json
+git commit -m "build web v1.0.1"
 git push
 ```
 
-Railway otomatik algılar: `npm install` → `npm start`
+Railway `npm install` + `npm start` çalıştırır. `server.js` `/api` isteklerini backend'e proxy eder.
 
-Local test:
+Giriş ekranında `v1.0.1 · API: /api/v1` görünmeli. Eski sürüm görüyorsanız build push edilmemiştir.
+
+## Local release test (CORS olmadan)
 
 ```bash
 flutter build web --release
@@ -32,10 +36,10 @@ npm install
 npm start
 ```
 
-## Backend CORS
+→ http://localhost:8080
 
-Frontend Railway URL'iniz backend CORS listesinde olmalı.
+## Backend
 
-## API
+`https://world-cup-predict-be-production.up.railway.app/api/v1`
 
 Detay: [user_api.md](user_api.md)

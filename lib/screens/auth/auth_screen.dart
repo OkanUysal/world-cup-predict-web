@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../config/api_config.dart';
 import '../../core/api/auth_api.dart';
 import '../../core/utils/error_message.dart';
 import '../../core/widgets/responsive_container.dart';
@@ -131,6 +132,14 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
                   'Arkadaşlarınla tahmin yap, puan topla!',
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                         color: Colors.grey.shade600,
+                      ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'v${ApiConfig.appVersion} · API: ${ApiConfig.baseUrl}',
+                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                        color: Colors.grey.shade400,
                       ),
                   textAlign: TextAlign.center,
                 ),
