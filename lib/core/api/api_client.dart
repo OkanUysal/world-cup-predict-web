@@ -1,5 +1,4 @@
 import 'package:dio/dio.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../config/api_config.dart';
 import '../utils/error_message.dart';
@@ -115,6 +114,9 @@ class ApiClient {
         statusCode: statusCode,
       );
     }
+    if (data is String && data.isNotEmpty) {
+      return ApiException(message: data, statusCode: statusCode);
+    }
     if (e.type == DioExceptionType.connectionTimeout ||
         e.type == DioExceptionType.receiveTimeout) {
       return ApiException(
@@ -136,6 +138,3 @@ class ApiClient {
   }
 }
 
-final apiClientProvider = Provider<ApiClient>((ref) {
-  throw UnimplementedError('apiClientProvider must be overridden');
-});

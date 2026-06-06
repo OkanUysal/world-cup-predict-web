@@ -1,9 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../core/api/api_client.dart';
-import '../core/api/api_exception.dart';
+import '../core/api/api_providers.dart';
 import '../core/storage/token_storage.dart';
-import '../core/utils/error_message.dart';
 import '../models/auth_response.dart';
 import '../models/user_profile.dart';
 import '../repositories/auth_repository.dart';
@@ -25,12 +23,10 @@ class AuthState {
     String? token,
     UserProfile? user,
     bool? isLoading,
-    bool clearToken = false,
-    bool clearUser = false,
   }) {
     return AuthState(
-      token: clearToken ? null : (token ?? this.token),
-      user: clearUser ? null : (user ?? this.user),
+      token: token ?? this.token,
+      user: user ?? this.user,
       isLoading: isLoading ?? this.isLoading,
     );
   }
@@ -39,6 +35,10 @@ class AuthState {
 class AuthNotifier extends StateNotifier<AuthState> {
   AuthNotifier(this._ref) : super(const AuthState()) {
     _init();
+    // 401 yanıtında token silindiğinde auth state'i güncelle
+    _ref.listen(unauthorizedTriggerProvider, (_, __) {
+      state = const AuthState();
+    });
   }
 
   final Ref _ref;
@@ -64,17 +64,13 @@ class AuthNotifier extends StateNotifier<AuthState> {
     required String password,
     String? channelCode,
   }) async {
-    try {
-      final repo = _ref.read(authRepositoryProvider);
-      final response = await repo.login(
-        name: name,
-        password: password,
-        channelCode: channelCode,
-      );
-      await _saveAuth(response);
-    } catch (e) {
-      throw ApiException(message: friendlyErrorMessage(e));
-    }
+    final repo = _ref.read(authRepositoryProvider);
+    final response = await repo.login(
+      name: name,
+      password: password,
+      channelCode: channelCode,
+    );
+    await _saveAuth(response);
   }
 
   Future<void> register({
@@ -82,17 +78,13 @@ class AuthNotifier extends StateNotifier<AuthState> {
     required String password,
     required String channelCode,
   }) async {
-    try {
-      final repo = _ref.read(authRepositoryProvider);
-      final response = await repo.register(
-        name: name,
-        password: password,
-        channelCode: channelCode,
-      );
-      await _saveAuth(response);
-    } catch (e) {
-      throw ApiException(message: friendlyErrorMessage(e));
-    }
+    final repo = _ref.read(authRepositoryProvider);
+    final response = await repo.register(
+      name: name,
+      password: password,
+      channelCode: channelCode,
+    );
+    await _saveAuth(response);
   }
 
   Future<void> _saveAuth(AuthResponse response) async {
@@ -109,7 +101,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
       final profile = await repo.getMe();
       state = state.copyWith(user: profile);
     } catch (_) {
-      // Profile refresh failure is non-fatal.
+      // Profil yenileme hatası kritik değil.
     }
   }
 
@@ -118,25 +110,8 @@ class AuthNotifier extends StateNotifier<AuthState> {
     await storage.clearAll();
     state = const AuthState();
   }
-
-  Future<void> handleUnauthorized() async {
-    await logout();
-  }
 }
 
-final authProvider = StateNotifierProvider<AuthNotifier, AuthState>((ref) {
-  final notifier = AuthNotifier(ref);
-
-  ref.listen(apiClientProvider, (_, __) {});
-
-  return notifier;
-});
-
-final apiClientOverrideProvider = Provider<ApiClient>((ref) {
-  final authNotifier = ref.read(authProvider.notifier);
-
-  return ApiClient(
-    getToken: () async => ref.read(authProvider).token,
-    onUnauthorized: authNotifier.handleUnauthorized,
-  );
-});
+final authProvider = StateNotifierProvider<AuthNotifier, AuthState>(
+  (ref) => AuthNotifier(ref),
+);

@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../core/api/api_client.dart';
+import '../core/api/api_providers.dart';
 import '../models/event.dart';
 import '../models/prediction.dart';
 import '../models/user_score.dart';
@@ -67,9 +68,9 @@ class UserRepository {
 }
 
 final eventRepositoryProvider = Provider<EventRepository>((ref) {
-  return EventRepository(ref.watch(apiClientProvider));
+  return EventRepository(ref.read(apiClientProvider));
 });
 
 final userRepositoryProvider = Provider<UserRepository>((ref) {
-  return UserRepository(ref.watch(apiClientProvider));
+  return UserRepository(ref.read(apiClientProvider));
 });

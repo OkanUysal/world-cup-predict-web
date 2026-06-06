@@ -5,6 +5,12 @@ import '../api/api_exception.dart';
 String friendlyErrorMessage(Object error) {
   if (error is ApiException) return error.message;
 
+  final type = error.runtimeType.toString();
+  if (type.contains('CircularDependency') ||
+      type.contains('CircularProvider')) {
+    return 'Uygulama yapılandırma hatası. Sayfayı yenileyip tekrar deneyin.';
+  }
+
   final text = error.toString();
   if (text.contains('minified:') ||
       text.startsWith('Instance of ') ||

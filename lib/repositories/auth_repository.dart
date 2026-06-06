@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../core/api/api_client.dart';
+import '../core/api/api_providers.dart';
 import '../models/auth_response.dart';
 import '../models/user_profile.dart';
 
@@ -51,5 +52,5 @@ class AuthRepository {
 }
 
 final authRepositoryProvider = Provider<AuthRepository>((ref) {
-  return AuthRepository(ref.watch(apiClientProvider));
+  return AuthRepository(ref.read(apiClientProvider));
 });
