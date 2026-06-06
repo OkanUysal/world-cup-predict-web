@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../core/utils/error_message.dart';
 import '../../core/widgets/responsive_container.dart';
 import '../../providers/auth_provider.dart';
+import '../../repositories/auth_repository.dart';
 
 class AuthScreen extends ConsumerStatefulWidget {
   const AuthScreen({super.key});
@@ -55,22 +56,30 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
 
   Future<void> _submitLogin() async {
     if (!_loginFormKey.currentState!.validate()) return;
-    await _submit(() => ref.read(authProvider.notifier).login(
-          name: _loginNameController.text.trim(),
-          password: _loginPasswordController.text,
-          channelCode: _loginChannelController.text.trim().isEmpty
-              ? null
-              : _loginChannelController.text.trim(),
-        ));
+    await _submit(() async {
+      final repo = ref.read(authRepositoryProvider);
+      final response = await repo.login(
+        name: _loginNameController.text.trim(),
+        password: _loginPasswordController.text,
+        channelCode: _loginChannelController.text.trim().isEmpty
+            ? null
+            : _loginChannelController.text.trim(),
+      );
+      await ref.read(authProvider.notifier).setSession(response);
+    });
   }
 
   Future<void> _submitRegister() async {
     if (!_registerFormKey.currentState!.validate()) return;
-    await _submit(() => ref.read(authProvider.notifier).register(
-          name: _registerNameController.text.trim(),
-          password: _registerPasswordController.text,
-          channelCode: _registerChannelController.text.trim(),
-        ));
+    await _submit(() async {
+      final repo = ref.read(authRepositoryProvider);
+      final response = await repo.register(
+        name: _registerNameController.text.trim(),
+        password: _registerPasswordController.text,
+        channelCode: _registerChannelController.text.trim(),
+      );
+      await ref.read(authProvider.notifier).setSession(response);
+    });
   }
 
   Future<void> _submit(Future<void> Function() action) async {

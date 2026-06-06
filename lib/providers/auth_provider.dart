@@ -35,7 +35,6 @@ class AuthState {
 class AuthNotifier extends StateNotifier<AuthState> {
   AuthNotifier(this._ref) : super(const AuthState()) {
     _init();
-    // 401 yanıtında token silindiğinde auth state'i güncelle
     _ref.listen(unauthorizedTriggerProvider, (_, __) {
       state = const AuthState();
     });
@@ -59,31 +58,8 @@ class AuthNotifier extends StateNotifier<AuthState> {
     }
   }
 
-  Future<void> login({
-    required String name,
-    required String password,
-    String? channelCode,
-  }) async {
-    final repo = _ref.read(authRepositoryProvider);
-    final response = await repo.login(
-      name: name,
-      password: password,
-      channelCode: channelCode,
-    );
-    await _saveAuth(response);
-  }
-
-  Future<void> register({
-    required String name,
-    required String password,
-    required String channelCode,
-  }) async {
-    final repo = _ref.read(authRepositoryProvider);
-    final response = await repo.register(
-      name: name,
-      password: password,
-      channelCode: channelCode,
-    );
+  /// Giriş/kayıt sonrası oturumu kaydet.
+  Future<void> setSession(AuthResponse response) async {
     await _saveAuth(response);
   }
 

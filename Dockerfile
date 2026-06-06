@@ -8,8 +8,7 @@ COPY pubspec.yaml pubspec.lock ./
 RUN flutter pub get
 
 COPY . .
-RUN flutter build web --release \
-    --dart-define=API_BASE_URL=https://world-cup-predict-be-production.up.railway.app/api/v1
+RUN flutter build web --release
 
 FROM nginx:alpine
 

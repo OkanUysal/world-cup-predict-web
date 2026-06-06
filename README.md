@@ -10,44 +10,60 @@ Flutter Web ile geliştirilmiş, mobil uyumlu Dünya Kupası tahmin uygulaması.
 - Kanal sıralaması (leaderboard)
 - Profil ve çıkış
 
-## Gereksinimler
-
-- Flutter 3.x (stable)
-- Chrome (web geliştirme için)
-
-## Yerel Geliştirme
-
-```bash
-flutter pub get
-flutter run -d chrome --dart-define=API_BASE_URL=https://world-cup-predict-be-production.up.railway.app/api/v1
-```
-
 ## API
 
-Backend base URL: `https://world-cup-predict-be-production.up.railway.app/api/v1`
+Backend: `https://world-cup-predict-be-production.up.railway.app/api/v1`
+
+Login örneği:
+
+```bash
+curl -X POST 'https://world-cup-predict-be-production.up.railway.app/api/v1/auth/login' \
+  -H 'accept: application/json' \
+  -H 'Content-Type: application/json' \
+  -d '{"name":"admin","password":"uysal"}'
+```
 
 Detaylı API dokümantasyonu: [user_api.md](user_api.md)
 
+## Yerel Test
+
+### Yöntem 1 — Docker (önerilen, CORS sorunu yok)
+
+Nginx, `/api/v1` isteklerini backend'e proxy eder:
+
+```bash
+docker build -t wc-predict-web .
+docker run -p 8080:8080 wc-predict-web
+```
+
+Tarayıcıda: http://localhost:8080
+
+### Yöntem 2 — `flutter run` (backend CORS gerekir)
+
+```bash
+flutter pub get
+flutter run -d chrome
+```
+
+Chrome, farklı origin'e istek atar. Backend'in `http://localhost:*` origin'ine CORS izni vermesi gerekir. Aksi halde "Sunucuya bağlanılamadı" hatası alırsınız — curl çalışsa bile tarayıcı engeller.
+
+API URL [`lib/config/api_config.dart`](lib/config/api_config.dart) içinde sabittir; `--dart-define` gerekmez.
+
 ## Railway Deploy
 
-1. Repo'yu GitHub'a push edin
-2. [Railway](https://railway.app) → New Project → Deploy from GitHub
-3. Bu repo'yu seçin — Dockerfile otomatik algılanır
-4. Deploy tamamlandığında public URL alın
-5. **CORS:** Backend'in frontend origin'ine izin verdiğinden emin olun
-
-### Ortam Değişkenleri
-
-API URL build sırasında `--dart-define=API_BASE_URL=...` ile gömülür. Farklı bir backend için Dockerfile'daki `ARG` veya build komutunu güncelleyin.
+1. GitHub'a push
+2. Railway → New Project → Deploy from GitHub
+3. Dockerfile otomatik algılanır
+4. Production build nginx proxy kullanır (`/api/v1` → backend)
 
 ## Proje Yapısı
 
 ```
 lib/
-├── config/          # API yapılandırması
-├── core/            # API client, router, tema, widget'lar
+├── config/          # API URL (sabit)
+├── core/            # API client, router, tema
 ├── models/          # DTO modelleri
-├── repositories/    # API repository katmanı
+├── repositories/    # API katmanı
 ├── providers/       # Riverpod state
 ├── screens/         # UI ekranları
 └── widgets/         # Paylaşılan widget'lar
@@ -55,8 +71,4 @@ lib/
 
 ## Teknolojiler
 
-- Flutter Web
-- Riverpod (state management)
-- go_router (routing)
-- Dio (HTTP client)
-- shared_preferences (token saklama)
+Flutter Web · Riverpod · go_router · Dio · shared_preferences
