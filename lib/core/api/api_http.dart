@@ -5,7 +5,8 @@ import 'package:http/http.dart' as http;
 
 import '../../config/api_config.dart';
 
-/// Flutter web uyumlu HTTP katmanı.
+/// outcome_flutter proxy deseni:
+/// `proxy?target=${Uri.encodeComponent(fullBackendUrl)}`
 class ApiHttp {
   ApiHttp._();
 
@@ -43,11 +44,13 @@ class ApiHttp {
     Map<String, dynamic>? body,
     Map<String, String>? extraHeaders,
   }) async {
-    final uri = Uri.parse('${ApiConfig.baseUrl}$path');
+    final target = Uri.parse('${ApiConfig.backendUrl}$path');
+    final uri = _requestUri(target);
     final headers = {..._headers, ...?extraHeaders};
 
     if (kDebugMode) {
       debugPrint('HTTP $method $uri');
+      if (ApiConfig.useProxy) debugPrint('  target: $target');
     }
 
     try {
@@ -65,20 +68,23 @@ class ApiHttp {
     }
   }
 
+  static Uri _requestUri(Uri target) {
+    if (!ApiConfig.useProxy) return target;
+    return Uri.parse(
+      '${ApiConfig.proxyUrl}?target=${Uri.encodeComponent(target.toString())}',
+    );
+  }
+
   static String _fail(Object e) {
     if (e is String) return e;
-    try {
-      final dynamic d = e;
-      if (d.message is String && (d.message as String).isNotEmpty) {
-        return d.message as String;
-      }
-    } catch (_) {}
     if (e is http.ClientException) {
-      return 'Sunucuya bağlanılamadı (CORS veya ağ hatası). '
-          'Backend\'in frontend domain\'ine izin vermesi gerekir.';
+      if (ApiConfig.useProxy && kDebugMode) {
+        return 'Sunucuya bağlanılamadı. `npm start` ile proxy\'yi '
+            'localhost:8080\'de çalıştırın.';
+      }
+      return 'Sunucuya bağlanılamadı (ağ hatası).';
     }
-    return 'Sunucuya bağlanılamadı (CORS veya ağ hatası). '
-        'Backend\'in frontend domain\'ine izin vermesi gerekir.';
+    return 'Sunucuya bağlanılamadı (ağ hatası).';
   }
 
   static Future<http.Response> _execute(

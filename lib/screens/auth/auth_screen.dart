@@ -137,7 +137,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  'v${ApiConfig.appVersion} · API: ${ApiConfig.baseUrl}',
+                  'v${ApiConfig.appVersion} · ${ApiConfig.useProxy ? ApiConfig.proxyUrl : ApiConfig.backendUrl}',
                   style: Theme.of(context).textTheme.labelSmall?.copyWith(
                         color: Colors.grey.shade400,
                       ),

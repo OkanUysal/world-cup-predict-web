@@ -26,7 +26,10 @@ Future<void> main() async {
     debugPrint('Date locale init failed: $e');
   }
 
-  debugPrint('API base URL: ${ApiConfig.baseUrl} (v${ApiConfig.appVersion})');
+  debugPrint(
+    'API proxy: ${ApiConfig.useProxy ? ApiConfig.proxyUrl : ApiConfig.backendUrl} '
+    '(v${ApiConfig.appVersion})',
+  );
 
   runApp(
     const ProviderScope(

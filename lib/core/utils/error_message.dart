@@ -21,7 +21,7 @@ String displayError(Object? error) {
   final text = error.toString();
   if (_isMinified(text)) {
     return 'Bir hata oluştu. Muhtemel nedenler:\n'
-        '• Backend CORS izni yok (en sık)\n'
+        '• Proxy çalışmıyor (local: `npm start` gerekir)\n'
         '• Eski build deploy edilmiş (flutter build + push)\n'
         '• Ağ bağlantısı sorunu';
   }
