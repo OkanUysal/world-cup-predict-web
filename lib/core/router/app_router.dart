@@ -13,24 +13,25 @@ import '../../screens/profile/profile_screen.dart';
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
 
 final routerProvider = Provider<GoRouter>((ref) {
-  final authState = ref.watch(authProvider);
-  final isLoading = authState.isLoading;
-  final isAuthenticated = authState.isAuthenticated;
+  final refreshNotifier = _RouterRefresh(ref);
+
+  ref.onDispose(refreshNotifier.dispose);
 
   return GoRouter(
     navigatorKey: _rootNavigatorKey,
     initialLocation: '/events',
-    refreshListenable: _RouterRefresh(ref),
+    refreshListenable: refreshNotifier,
     redirect: (context, state) {
-      if (isLoading) return null;
+      final authState = ref.read(authProvider);
+      if (authState.isLoading) return null;
 
       final location = state.matchedLocation;
       final isAuthRoute = location == '/auth';
 
-      if (!isAuthenticated && !isAuthRoute) {
+      if (!authState.isAuthenticated && !isAuthRoute) {
         return '/auth';
       }
-      if (isAuthenticated && isAuthRoute) {
+      if (authState.isAuthenticated && isAuthRoute) {
         return '/events';
       }
       return null;

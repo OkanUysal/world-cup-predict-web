@@ -1,7 +1,9 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../core/api/api_client.dart';
+import '../core/api/api_exception.dart';
 import '../core/storage/token_storage.dart';
+import '../core/utils/error_message.dart';
 import '../models/auth_response.dart';
 import '../models/user_profile.dart';
 import '../repositories/auth_repository.dart';
@@ -62,13 +64,17 @@ class AuthNotifier extends StateNotifier<AuthState> {
     required String password,
     String? channelCode,
   }) async {
-    final repo = _ref.read(authRepositoryProvider);
-    final response = await repo.login(
-      name: name,
-      password: password,
-      channelCode: channelCode,
-    );
-    await _saveAuth(response);
+    try {
+      final repo = _ref.read(authRepositoryProvider);
+      final response = await repo.login(
+        name: name,
+        password: password,
+        channelCode: channelCode,
+      );
+      await _saveAuth(response);
+    } catch (e) {
+      throw ApiException(message: friendlyErrorMessage(e));
+    }
   }
 
   Future<void> register({
@@ -76,13 +82,17 @@ class AuthNotifier extends StateNotifier<AuthState> {
     required String password,
     required String channelCode,
   }) async {
-    final repo = _ref.read(authRepositoryProvider);
-    final response = await repo.register(
-      name: name,
-      password: password,
-      channelCode: channelCode,
-    );
-    await _saveAuth(response);
+    try {
+      final repo = _ref.read(authRepositoryProvider);
+      final response = await repo.register(
+        name: name,
+        password: password,
+        channelCode: channelCode,
+      );
+      await _saveAuth(response);
+    } catch (e) {
+      throw ApiException(message: friendlyErrorMessage(e));
+    }
   }
 
   Future<void> _saveAuth(AuthResponse response) async {

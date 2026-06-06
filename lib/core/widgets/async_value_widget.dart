@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../utils/error_message.dart';
+
 class AsyncValueWidget<T> extends StatelessWidget {
   const AsyncValueWidget({
     super.key,
@@ -29,7 +31,7 @@ class AsyncValueWidget<T> extends StatelessWidget {
               Icon(Icons.error_outline, size: 48, color: Colors.red.shade300),
               const SizedBox(height: 16),
               Text(
-                error.toString(),
+                friendlyErrorMessage(error),
                 textAlign: TextAlign.center,
                 style: TextStyle(color: Colors.grey.shade700),
               ),

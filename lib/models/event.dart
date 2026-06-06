@@ -79,11 +79,14 @@ class Event {
   final String createdAt;
 
   factory Event.fromJson(Map<String, dynamic> json) {
+    final metadataRaw = json['metadata'];
     return Event(
       id: json['id'] as String,
       type: EventType.fromString(json['type'] as String),
       title: json['title'] as String,
-      metadata: Map<String, dynamic>.from(json['metadata'] as Map),
+      metadata: metadataRaw is Map
+          ? Map<String, dynamic>.from(metadataRaw)
+          : const {},
       deadline: json['deadline'] as String,
       status: EventStatus.fromString(json['status'] as String),
       result: json['result'] != null

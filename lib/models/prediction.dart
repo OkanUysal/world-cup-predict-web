@@ -20,12 +20,15 @@ class Prediction {
   final String? userName;
 
   factory Prediction.fromJson(Map<String, dynamic> json) {
+    final choiceRaw = json['choice'];
     return Prediction(
       id: json['id'] as String,
       eventId: json['event_id'] as String,
       userId: json['user_id'] as String,
-      choice: Map<String, dynamic>.from(json['choice'] as Map),
-      pointsAwarded: json['points_awarded'] as int? ?? 0,
+      choice: choiceRaw is Map
+          ? Map<String, dynamic>.from(choiceRaw)
+          : const {},
+      pointsAwarded: (json['points_awarded'] as num?)?.toInt() ?? 0,
       createdAt: json['created_at'] as String,
       updatedAt: json['updated_at'] as String,
       userName: json['user_name'] as String?,

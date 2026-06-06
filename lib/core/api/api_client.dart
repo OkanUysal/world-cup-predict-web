@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../config/api_config.dart';
+import '../utils/error_message.dart';
 import 'api_exception.dart';
 
 typedef OnUnauthorized = Future<void> Function();
@@ -87,11 +88,21 @@ class ApiClient {
       final response = await request();
       final responseData = response.data;
       if (parser != null) {
-        return parser(responseData);
+        try {
+          return parser(responseData);
+        } catch (e) {
+          throw ApiException(
+            message: 'Sunucu yanıtı işlenemedi',
+          );
+        }
       }
       return responseData as T;
+    } on ApiException {
+      rethrow;
     } on DioException catch (e) {
       throw _mapError(e);
+    } catch (e) {
+      throw ApiException(message: friendlyErrorMessage(e));
     }
   }
 
@@ -113,7 +124,8 @@ class ApiClient {
     }
     if (e.type == DioExceptionType.connectionError) {
       return ApiException(
-        message: 'Sunucuya bağlanılamadı',
+        message:
+            'Sunucuya bağlanılamadı. İnternet bağlantınızı veya CORS ayarlarını kontrol edin.',
         statusCode: statusCode,
       );
     }

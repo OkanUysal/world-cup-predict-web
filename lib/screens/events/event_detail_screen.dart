@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../core/utils/error_message.dart';
 import '../../core/utils/date_utils.dart';
 import '../../core/widgets/async_value_widget.dart';
 import '../../core/widgets/responsive_container.dart';
@@ -34,8 +35,10 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
     final prediction = detail.myPrediction;
     if (prediction != null) {
       if (detail.event.type == EventType.matchScore) {
-        _homeScore = prediction.choice['home_score'] as int? ?? 0;
-        _awayScore = prediction.choice['away_score'] as int? ?? 0;
+        _homeScore =
+            (prediction.choice['home_score'] as num?)?.toInt() ?? 0;
+        _awayScore =
+            (prediction.choice['away_score'] as num?)?.toInt() ?? 0;
       } else {
         _selectedTeam = prediction.choice['team'] as String?;
       }
@@ -75,7 +78,7 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(e.toString())),
+          SnackBar(content: Text(friendlyErrorMessage(e))),
         );
       }
     } finally {

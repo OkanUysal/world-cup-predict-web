@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../core/utils/error_message.dart';
 import '../../core/widgets/responsive_container.dart';
 import '../../providers/auth_provider.dart';
 
@@ -81,7 +82,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
       await action();
       if (mounted) context.go('/events');
     } catch (e) {
-      setState(() => _errorMessage = e.toString());
+      setState(() => _errorMessage = friendlyErrorMessage(e));
     } finally {
       if (mounted) setState(() => _isSubmitting = false);
     }
