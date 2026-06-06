@@ -1,0 +1,11 @@
+[phases.setup]
+nixPkgs = ["nodejs", "git", "curl", "bash"]
+
+[phases.install]
+cmds = ["chmod +x scripts/railway-build.sh"]
+
+[phases.build]
+cmds = ["bash scripts/railway-build.sh"]
+
+[start]
+cmd = "npx --yes serve -s build/web -l ${PORT:-8080}"

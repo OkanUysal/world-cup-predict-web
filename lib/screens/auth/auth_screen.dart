@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../core/api/auth_api.dart';
 import '../../core/utils/error_message.dart';
 import '../../core/widgets/responsive_container.dart';
 import '../../providers/auth_provider.dart';
-import '../../repositories/auth_repository.dart';
 
 class AuthScreen extends ConsumerStatefulWidget {
   const AuthScreen({super.key});
@@ -57,8 +57,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
   Future<void> _submitLogin() async {
     if (!_loginFormKey.currentState!.validate()) return;
     await _submit(() async {
-      final repo = ref.read(authRepositoryProvider);
-      final response = await repo.login(
+      final response = await AuthApi.login(
         name: _loginNameController.text.trim(),
         password: _loginPasswordController.text,
         channelCode: _loginChannelController.text.trim().isEmpty
@@ -72,8 +71,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
   Future<void> _submitRegister() async {
     if (!_registerFormKey.currentState!.validate()) return;
     await _submit(() async {
-      final repo = ref.read(authRepositoryProvider);
-      final response = await repo.register(
+      final response = await AuthApi.register(
         name: _registerNameController.text.trim(),
         password: _registerPasswordController.text,
         channelCode: _registerChannelController.text.trim(),
