@@ -31,7 +31,7 @@ class AsyncValueWidget<T> extends StatelessWidget {
               Icon(Icons.error_outline, size: 48, color: Colors.red.shade300),
               const SizedBox(height: 16),
               Text(
-                friendlyErrorMessage(error),
+                displayError(error),
                 textAlign: TextAlign.center,
                 style: TextStyle(color: Colors.grey.shade700),
               ),

@@ -4,9 +4,8 @@ import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 
 import '../../config/api_config.dart';
-import 'api_exception.dart';
 
-/// Flutter web uyumlu HTTP katmanı (Dio yerine).
+/// Flutter web uyumlu HTTP katmanı.
 class ApiHttp {
   ApiHttp._();
 
@@ -60,14 +59,26 @@ class ApiHttp {
       }
 
       return _handleResponse(response);
-    } on ApiException {
-      rethrow;
-    } on Exception {
-      throw ApiException(
-        message:
-            'Sunucuya bağlanılamadı. CORS veya ağ hatası olabilir — backend erişimini kontrol edin.',
-      );
+    } catch (e, stack) {
+      if (kDebugMode) debugPrint('HTTP fail: $e\n$stack');
+      throw _fail(e);
     }
+  }
+
+  static String _fail(Object e) {
+    if (e is String) return e;
+    try {
+      final dynamic d = e;
+      if (d.message is String && (d.message as String).isNotEmpty) {
+        return d.message as String;
+      }
+    } catch (_) {}
+    if (e is http.ClientException) {
+      return 'Sunucuya bağlanılamadı (CORS veya ağ hatası). '
+          'Backend\'in frontend domain\'ine izin vermesi gerekir.';
+    }
+    return 'Sunucuya bağlanılamadı (CORS veya ağ hatası). '
+        'Backend\'in frontend domain\'ine izin vermesi gerekir.';
   }
 
   static Future<http.Response> _execute(
@@ -85,7 +96,7 @@ class ApiHttp {
       case 'PUT':
         return http.put(uri, headers: headers, body: encoded);
       default:
-        throw ApiException(message: 'Desteklenmeyen HTTP metodu: $method');
+        throw 'Desteklenmeyen HTTP metodu: $method';
     }
   }
 
@@ -97,21 +108,19 @@ class ApiHttp {
       try {
         decoded = jsonDecode(response.body);
       } catch (_) {
-        if (status >= 400) {
-          throw ApiException(
-            message: response.body,
-            statusCode: status,
-          );
-        }
-        throw ApiException(message: 'Geçersiz sunucu yanıtı');
+        if (status >= 400) throw response.body;
+        throw 'Geçersiz sunucu yanıtı';
       }
     }
 
     if (status >= 400) {
-      final message = decoded is Map && decoded['error'] != null
-          ? decoded['error'].toString()
-          : 'İstek başarısız ($status)';
-      throw ApiException(message: message, statusCode: status);
+      if (decoded is Map && decoded['error'] != null) {
+        final msg = decoded['error'].toString();
+        if (status == 401) throw 'HTTP_401:$msg';
+        throw msg;
+      }
+      if (status == 401) throw 'HTTP_401:İstek başarısız ($status)';
+      throw 'İstek başarısız ($status)';
     }
 
     return decoded;

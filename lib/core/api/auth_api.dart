@@ -1,10 +1,9 @@
 import 'package:flutter/foundation.dart';
 
 import '../../models/auth_response.dart';
-import 'api_exception.dart';
 import 'api_http.dart';
 
-/// Giriş/kayıt — doğrudan HTTP, Riverpod yok.
+/// Giriş/kayıt — hatalar String olarak fırlatılır (minified class yok).
 class AuthApi {
   AuthApi._();
 
@@ -40,14 +39,14 @@ class AuthApi {
     try {
       final data = await ApiHttp.post(path, body: body);
       if (data is! Map<String, dynamic>) {
-        throw ApiException(message: 'Geçersiz giriş yanıtı');
+        throw 'Geçersiz giriş yanıtı';
       }
       return AuthResponse.fromJson(data);
-    } on ApiException {
+    } on String {
       rethrow;
     } catch (e, stack) {
-      if (kDebugMode) debugPrint('AuthApi error: $e\n$stack');
-      throw ApiException(message: 'Giriş isteği başarısız');
+      if (kDebugMode) debugPrint('AuthApi parse error: $e\n$stack');
+      throw 'Giriş yanıtı işlenemedi';
     }
   }
 }

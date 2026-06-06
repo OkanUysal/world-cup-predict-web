@@ -1,7 +1,6 @@
 import 'package:flutter/foundation.dart';
 
 import '../utils/error_message.dart';
-import 'api_exception.dart';
 import 'api_http.dart';
 
 typedef OnUnauthorized = Future<void> Function();
@@ -94,12 +93,12 @@ class ApiClient {
           return parser(responseData);
         } catch (e, stack) {
           if (kDebugMode) debugPrint('Parse error: $e\n$stack');
-          throw ApiException(message: 'Sunucu yanıtı işlenemedi');
+          throw 'Sunucu yanıtı işlenemedi';
         }
       }
       return responseData as T;
-    } on ApiException catch (e) {
-      if (e.statusCode == 401 &&
+    } on String catch (e) {
+      if (e.startsWith('HTTP_401:') &&
           !path.contains('/auth/') &&
           onUnauthorized != null) {
         await onUnauthorized!();
@@ -107,7 +106,7 @@ class ApiClient {
       rethrow;
     } catch (e, stack) {
       if (kDebugMode) debugPrint('API error: $e\n$stack');
-      throw ApiException(message: friendlyErrorMessage(e));
+      throw displayError(e);
     }
   }
 }

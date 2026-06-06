@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../core/api/api_exception.dart';
 import '../../core/api/auth_api.dart';
 import '../../core/utils/error_message.dart';
 import '../../core/widgets/responsive_container.dart';
@@ -89,10 +88,8 @@ class _AuthScreenState extends ConsumerState<AuthScreen>
     try {
       await action();
       if (mounted) context.go('/events');
-    } on ApiException catch (e) {
-      setState(() => _errorMessage = e.message);
     } catch (e) {
-      setState(() => _errorMessage = friendlyErrorMessage(e));
+      setState(() => _errorMessage = displayError(e));
     } finally {
       if (mounted) setState(() => _isSubmitting = false);
     }

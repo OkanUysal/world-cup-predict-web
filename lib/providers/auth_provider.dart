@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../core/utils/error_message.dart';
 import '../core/api/api_providers.dart';
 import '../core/storage/token_storage.dart';
 import '../models/auth_response.dart';
@@ -60,7 +61,11 @@ class AuthNotifier extends StateNotifier<AuthState> {
 
   /// Giriş/kayıt sonrası oturumu kaydet.
   Future<void> setSession(AuthResponse response) async {
-    await _saveAuth(response);
+    try {
+      await _saveAuth(response);
+    } catch (e) {
+      throw displayError(e);
+    }
   }
 
   Future<void> _saveAuth(AuthResponse response) async {

@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../core/utils/error_message.dart';
 import '../../core/utils/date_utils.dart';
+import '../../core/utils/error_message.dart';
 import '../../core/widgets/async_value_widget.dart';
 import '../../core/widgets/responsive_container.dart';
 import '../../models/event.dart';
@@ -78,7 +78,7 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(friendlyErrorMessage(e))),
+          SnackBar(content: Text(displayError(e))),
         );
       }
     } finally {

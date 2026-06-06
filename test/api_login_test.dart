@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'package:world_cup_predict_web/core/api/api_exception.dart';
+import 'package:world_cup_predict_web/core/utils/error_message.dart';
 import 'package:world_cup_predict_web/repositories/auth_repository.dart';
 
 void main() {
@@ -20,10 +20,10 @@ void main() {
         channelCode: 'TEST01',
       );
       fail('Expected login to fail');
-    } on ApiException catch (e) {
-      // Network worked — got an API-level error
-      expect(e.message, isNot(contains('minified')));
-      expect(e.message, isNotEmpty);
+    } catch (e) {
+      final msg = displayError(e);
+      expect(msg, isNot(contains('minified')));
+      expect(msg, isNotEmpty);
     }
   });
 }

@@ -1,32 +1,35 @@
-import '../api/api_exception.dart';
+/// Her zaman okunabilir metin döner — release build'de asla "Instance of minified:..." göstermez.
+String displayError(Object? error) {
+  if (error == null) return 'Bilinmeyen hata';
 
-/// Release/minified web build'lerde anlamsız "Instance of minified:..." metinlerini
-/// kullanıcı dostu mesajlara çevirir.
-String friendlyErrorMessage(Object error) {
-  // Minified build'de `is ApiException` güvenilir olmayabilir — duck typing
+  // ApiException — .message kullan, toString değil
   try {
     final dynamic e = error;
-    final message = e.message;
-    if (message is String && message.isNotEmpty) {
-      return message;
+    final msg = e.message;
+    if (msg is String && msg.isNotEmpty && !_isMinified(msg)) {
+      return msg;
     }
   } catch (_) {}
 
-  if (error is ApiException) return error.message;
-
-  final type = error.runtimeType.toString();
-  if (type.contains('CircularDependency') ||
-      type.contains('CircularProvider')) {
-    return 'Uygulama yapılandırma hatası. Sayfayı yenileyip tekrar deneyin.';
+  if (error is String) {
+    if (error.startsWith('HTTP_401:')) {
+      return error.substring('HTTP_401:'.length);
+    }
+    return error;
   }
 
   final text = error.toString();
-  final lower = text.toLowerCase();
-  if (lower.contains('minified') ||
-      lower.contains('instance of') ||
-      text == 'null') {
-    return 'Sunucuya bağlanılamadı. CORS veya ağ hatası olabilir — sayfayı yenileyip tekrar deneyin.';
+  if (_isMinified(text)) {
+    return 'Bir hata oluştu. Muhtemel nedenler:\n'
+        '• Backend CORS izni yok (en sık)\n'
+        '• Eski build deploy edilmiş (flutter build + push)\n'
+        '• Ağ bağlantısı sorunu';
   }
 
   return text;
+}
+
+bool _isMinified(String text) {
+  final lower = text.toLowerCase();
+  return lower.contains('minified') || lower.contains('instance of');
 }
