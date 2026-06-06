@@ -1,0 +1,132 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+import '../core/api/api_client.dart';
+import '../core/storage/token_storage.dart';
+import '../models/auth_response.dart';
+import '../models/user_profile.dart';
+import '../repositories/auth_repository.dart';
+
+class AuthState {
+  const AuthState({
+    this.token,
+    this.user,
+    this.isLoading = false,
+  });
+
+  final String? token;
+  final UserProfile? user;
+  final bool isLoading;
+
+  bool get isAuthenticated => token != null && token!.isNotEmpty;
+
+  AuthState copyWith({
+    String? token,
+    UserProfile? user,
+    bool? isLoading,
+    bool clearToken = false,
+    bool clearUser = false,
+  }) {
+    return AuthState(
+      token: clearToken ? null : (token ?? this.token),
+      user: clearUser ? null : (user ?? this.user),
+      isLoading: isLoading ?? this.isLoading,
+    );
+  }
+}
+
+class AuthNotifier extends StateNotifier<AuthState> {
+  AuthNotifier(this._ref) : super(const AuthState()) {
+    _init();
+  }
+
+  final Ref _ref;
+
+  Future<void> _init() async {
+    state = state.copyWith(isLoading: true);
+    try {
+      final storage = await _ref.read(tokenStorageProvider.future);
+      final token = await storage.getToken();
+      if (token != null && token.isNotEmpty) {
+        state = AuthState(token: token, isLoading: false);
+        await refreshProfile();
+      } else {
+        state = const AuthState(isLoading: false);
+      }
+    } catch (_) {
+      state = const AuthState(isLoading: false);
+    }
+  }
+
+  Future<void> login({
+    required String name,
+    required String password,
+    String? channelCode,
+  }) async {
+    final repo = _ref.read(authRepositoryProvider);
+    final response = await repo.login(
+      name: name,
+      password: password,
+      channelCode: channelCode,
+    );
+    await _saveAuth(response);
+  }
+
+  Future<void> register({
+    required String name,
+    required String password,
+    required String channelCode,
+  }) async {
+    final repo = _ref.read(authRepositoryProvider);
+    final response = await repo.register(
+      name: name,
+      password: password,
+      channelCode: channelCode,
+    );
+    await _saveAuth(response);
+  }
+
+  Future<void> _saveAuth(AuthResponse response) async {
+    final storage = await _ref.read(tokenStorageProvider.future);
+    await storage.saveToken(response.accessToken);
+    await storage.saveUserId(response.user.id);
+    state = AuthState(token: response.accessToken, user: response.user);
+  }
+
+  Future<void> refreshProfile() async {
+    if (!state.isAuthenticated) return;
+    try {
+      final repo = _ref.read(authRepositoryProvider);
+      final profile = await repo.getMe();
+      state = state.copyWith(user: profile);
+    } catch (_) {
+      // Profile refresh failure is non-fatal.
+    }
+  }
+
+  Future<void> logout() async {
+    final storage = await _ref.read(tokenStorageProvider.future);
+    await storage.clearAll();
+    state = const AuthState();
+  }
+
+  Future<void> handleUnauthorized() async {
+    await logout();
+  }
+}
+
+final authProvider = StateNotifierProvider<AuthNotifier, AuthState>((ref) {
+  final notifier = AuthNotifier(ref);
+
+  ref.listen(apiClientProvider, (_, __) {});
+
+  return notifier;
+});
+
+final apiClientOverrideProvider = Provider<ApiClient>((ref) {
+  final authNotifier = ref.read(authProvider.notifier);
+
+  return ApiClient(
+    getToken: () async => ref.read(authProvider).token,
+    onUnauthorized: authNotifier.handleUnauthorized,
+  );
+});
