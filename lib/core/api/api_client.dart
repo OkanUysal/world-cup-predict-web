@@ -1,9 +1,8 @@
-import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 
-import '../../config/api_config.dart';
 import '../utils/error_message.dart';
 import 'api_exception.dart';
+import 'api_http.dart';
 
 typedef OnUnauthorized = Future<void> Function();
 
@@ -11,62 +10,8 @@ class ApiClient {
   ApiClient({
     required this.getToken,
     this.onUnauthorized,
-  }) {
-    _dio = Dio(
-      BaseOptions(
-        baseUrl: ApiConfig.baseUrl,
-        connectTimeout: ApiConfig.timeout,
-        receiveTimeout: ApiConfig.timeout,
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-        },
-        validateStatus: (status) => status != null && status < 500,
-      ),
-    );
+  });
 
-    _dio.interceptors.add(
-      InterceptorsWrapper(
-        onRequest: (options, handler) async {
-          final isAuthPath = options.path.startsWith('/auth/');
-          if (!isAuthPath) {
-            final token = await getToken();
-            if (token != null && token.isNotEmpty) {
-              options.headers['Authorization'] = 'Bearer $token';
-            }
-          }
-          if (kDebugMode) {
-            debugPrint('API ${options.method} ${options.uri}');
-          }
-          handler.next(options);
-        },
-        onResponse: (response, handler) {
-          final status = response.statusCode ?? 0;
-          if (status >= 400) {
-            handler.reject(
-              DioException(
-                requestOptions: response.requestOptions,
-                response: response,
-                type: DioExceptionType.badResponse,
-              ),
-            );
-            return;
-          }
-          handler.next(response);
-        },
-        onError: (error, handler) async {
-          final path = error.requestOptions.path;
-          final isAuthPath = path.startsWith('/auth/');
-          if (!isAuthPath && error.response?.statusCode == 401) {
-            await onUnauthorized?.call();
-          }
-          handler.next(error);
-        },
-      ),
-    );
-  }
-
-  late final Dio _dio;
   final Future<String?> Function() getToken;
   final OnUnauthorized? onUnauthorized;
 
@@ -75,9 +20,14 @@ class ApiClient {
     Map<String, dynamic>? queryParameters,
     T Function(dynamic data)? parser,
   }) async {
+    final pathWithQuery = _withQuery(path, queryParameters);
     return _request(
-      () => _dio.get<dynamic>(path, queryParameters: queryParameters),
+      () async => ApiHttp.get(
+        pathWithQuery,
+        extraHeaders: await _authHeaders(pathWithQuery),
+      ),
       parser: parser,
+      path: pathWithQuery,
     );
   }
 
@@ -87,8 +37,13 @@ class ApiClient {
     T Function(dynamic data)? parser,
   }) async {
     return _request(
-      () => _dio.post<dynamic>(path, data: data),
+      () async => ApiHttp.post(
+        path,
+        body: data,
+        extraHeaders: await _authHeaders(path),
+      ),
       parser: parser,
+      path: path,
     );
   }
 
@@ -98,18 +53,42 @@ class ApiClient {
     T Function(dynamic data)? parser,
   }) async {
     return _request(
-      () => _dio.put<dynamic>(path, data: data),
+      () async => ApiHttp.put(
+        path,
+        body: data,
+        extraHeaders: await _authHeaders(path),
+      ),
       parser: parser,
+      path: path,
     );
   }
 
+  Future<Map<String, String>> _authHeaders(String path) async {
+    if (path.contains('/auth/')) return {};
+    final token = await getToken();
+    if (token != null && token.isNotEmpty) {
+      return {'Authorization': 'Bearer $token'};
+    }
+    return {};
+  }
+
+  String _withQuery(String path, Map<String, dynamic>? queryParameters) {
+    if (queryParameters == null || queryParameters.isEmpty) return path;
+    final uri = Uri.parse(path).replace(
+      queryParameters: queryParameters.map(
+        (k, v) => MapEntry(k, v?.toString() ?? ''),
+      ),
+    );
+    return uri.toString();
+  }
+
   Future<T> _request<T>(
-    Future<Response<dynamic>> Function() request, {
+    Future<dynamic> Function() call, {
     T Function(dynamic data)? parser,
+    required String path,
   }) async {
     try {
-      final response = await request();
-      final responseData = response.data;
+      final responseData = await call();
       if (parser != null) {
         try {
           return parser(responseData);
@@ -119,59 +98,16 @@ class ApiClient {
         }
       }
       return responseData as T;
-    } on ApiException {
+    } on ApiException catch (e) {
+      if (e.statusCode == 401 &&
+          !path.contains('/auth/') &&
+          onUnauthorized != null) {
+        await onUnauthorized!();
+      }
       rethrow;
-    } on DioException catch (e) {
-      throw _mapError(e);
     } catch (e, stack) {
       if (kDebugMode) debugPrint('API error: $e\n$stack');
       throw ApiException(message: friendlyErrorMessage(e));
     }
-  }
-
-  ApiException _mapError(DioException e) {
-    final statusCode = e.response?.statusCode;
-    final data = e.response?.data;
-
-    if (data is Map && data['error'] != null) {
-      return ApiException(
-        message: data['error'].toString(),
-        statusCode: statusCode,
-      );
-    }
-    if (data is String && data.isNotEmpty) {
-      try {
-        // Bazı yanıtlar JSON string olarak gelebilir
-        if (data.contains('"error"')) {
-          final match = RegExp(r'"error"\s*:\s*"([^"]+)"').firstMatch(data);
-          if (match != null) {
-            return ApiException(
-              message: match.group(1)!,
-              statusCode: statusCode,
-            );
-          }
-        }
-      } catch (_) {}
-      return ApiException(message: data, statusCode: statusCode);
-    }
-    if (e.type == DioExceptionType.connectionTimeout ||
-        e.type == DioExceptionType.receiveTimeout) {
-      return ApiException(
-        message: 'Bağlantı zaman aşımına uğradı',
-        statusCode: statusCode,
-      );
-    }
-    if (e.type == DioExceptionType.connectionError ||
-        e.type == DioExceptionType.unknown) {
-      return ApiException(
-        message:
-            'Sunucuya bağlanılamadı. CORS veya ağ hatası olabilir — backend erişimini kontrol edin.',
-        statusCode: statusCode,
-      );
-    }
-    return ApiException(
-      message: friendlyErrorMessage(e),
-      statusCode: statusCode,
-    );
   }
 }
