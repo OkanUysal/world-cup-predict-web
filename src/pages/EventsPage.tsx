@@ -66,7 +66,7 @@ export default function EventsPage() {
 
       <div className="event-list">
         {events.map((item) => (
-          <EventCard key={item.event.id} item={item} />
+          <EventCard key={item.event.id} item={item} onUpdated={load} />
         ))}
       </div>
     </div>

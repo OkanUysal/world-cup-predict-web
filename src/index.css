@@ -285,11 +285,11 @@ form select:focus {
   border-radius: var(--radius);
   border: 1px solid var(--gray-200);
   background: #fff;
-  transition: box-shadow 0.15s;
 }
 
-.event-card:hover {
-  box-shadow: var(--shadow);
+.event-card h3 {
+  font-size: 1rem;
+  margin-bottom: 4px;
 }
 
 .event-card-header {
@@ -299,9 +299,98 @@ form select:focus {
   margin-bottom: 8px;
 }
 
-.event-card h3 {
-  font-size: 1rem;
+.match-label {
+  font-weight: 500;
+  margin-bottom: 2px;
+}
+
+.inline-prediction {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--gray-200);
+}
+
+.inline-prediction .score-row.compact {
+  margin-bottom: 10px;
+}
+
+.inline-prediction .score-row.compact input {
+  width: 100%;
+  padding: 8px;
+  text-align: center;
+  font-size: 1.1rem;
+  font-weight: 600;
+  border: 1px solid var(--gray-200);
+  border-radius: 8px;
+}
+
+.score-team {
+  display: block;
+  font-size: 0.75rem;
+  color: var(--gray-600);
   margin-bottom: 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.team-select select {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--gray-200);
+  border-radius: 8px;
+  background: #fff;
+}
+
+.btn-save {
+  width: 100%;
+  padding: 10px;
+  border: none;
+  border-radius: 8px;
+  background: var(--green-700);
+  color: #fff;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.btn-save:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.inline-error {
+  color: var(--red-600);
+  font-size: 0.8rem;
+  margin-bottom: 8px;
+}
+
+.inline-success {
+  color: var(--green-700);
+  font-size: 0.8rem;
+  margin-bottom: 8px;
+  font-weight: 500;
+}
+
+.channel-predictions {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--gray-200);
+}
+
+.channel-title {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--gray-600);
+  margin-bottom: 8px;
+}
+
+.small {
+  font-size: 0.8rem;
+}
+
+.prediction-list.compact li {
+  padding: 6px 0;
+  font-size: 0.8rem;
 }
 
 .badge {
@@ -342,12 +431,6 @@ form select:focus {
   font-size: 0.875rem;
   color: var(--green-700);
   font-weight: 500;
-}
-
-.hint {
-  margin-top: 8px;
-  font-size: 0.8rem;
-  color: var(--green-500);
 }
 
 .points {
