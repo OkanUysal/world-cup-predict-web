@@ -1,0 +1,14 @@
+{
+  "name": "world-cup-predict-web",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "start": "serve -s build/web -l ${PORT:-8080}"
+  },
+  "dependencies": {
+    "serve": "^14.2.4"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

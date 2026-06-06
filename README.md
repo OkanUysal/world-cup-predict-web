@@ -11,30 +11,31 @@ flutter pub get
 flutter run -d chrome
 ```
 
-Console'da `API base URL: https://...` görünmeli.
+## Railway deploy
 
-> **CORS:** `flutter run` ile Chrome farklı origin'den istek atar. Backend'in `http://localhost:*` için CORS açması gerekir. curl çalışsa bile tarayıcı engelleyebilir.
+Build localde, Railway `package.json` ile `build/web` dosyalarını serve eder.
 
-## Railway deploy (Nixpacks)
+```bash
+flutter build web --release
+git add build/web package.json
+git commit -m "build web"
+git push
+```
 
-1. GitHub'a push
-2. Railway → servis → Settings → **Builder: Nixpacks**
-3. Deploy — build komutları `nixpacks.toml` içinde (Flutter clone + `flutter build web`)
-4. `serve` ile `build/web` sunulur
+Railway otomatik algılar: `npm install` → `npm start`
 
-### Backend CORS (önemli)
+Local test:
 
-Frontend Railway URL'iniz (örn. `https://world-cup-predict-web-xxx.up.railway.app`) backend CORS listesinde olmalı. Aksi halde tarayıcı isteği engeller.
+```bash
+flutter build web --release
+npm install
+npm start
+```
+
+## Backend CORS
+
+Frontend Railway URL'iniz backend CORS listesinde olmalı.
 
 ## API
 
 Detay: [user_api.md](user_api.md)
-
-Login örneği:
-
-```bash
-curl -X POST 'https://world-cup-predict-be-production.up.railway.app/api/v1/auth/login' \
-  -H 'accept: application/json' \
-  -H 'Content-Type: application/json' \
-  -d '{"name":"admin","password":"uysal"}'
-```
