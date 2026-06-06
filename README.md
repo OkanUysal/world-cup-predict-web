@@ -1,61 +1,50 @@
-# Dünya Kupası Tahmin — Web
+# Dünya Kupası Tahmin — React Web
 
-[outcome_flutter](https://github.com/OkanUysal/outcome_flutter) ile aynı proxy mantığı:
+React + Vite + Express. Railway'de otomatik build alır.
 
-```dart
-final target = '${ApiConfig.backendUrl}/auth/login';
-final proxy = '${ApiConfig.proxyUrl}?target=${Uri.encodeComponent(target)}';
-await http.post(Uri.parse(proxy), ...);
-```
+## Özellikler
 
-Tarayıcı doğrudan backend'e gitmez; `server.js` üzerindeki `/api/v1/proxy` isteği backend'e iletir.
+- Giriş / Kayıt
+- Tahminler (açık / bekleyen / tamamlanan)
+- Event detay + tahmin girme
+- Sıralama tablosu
+- Profil
 
-## Ortamlar
-
-| Ortam | Proxy URL |
-|-------|-----------|
-| `flutter run -d chrome` | `http://localhost:8080/api/v1/proxy` (`npm start` gerekir) |
-| Railway / `npm start` (release) | `/api/v1/proxy` (aynı origin) |
-
-## Local debug
-
-Terminal 1 — proxy sunucusu:
+## Local geliştirme
 
 ```bash
 npm install
-npm start
+npm run dev
 ```
 
-Terminal 2 — Flutter:
+→ http://localhost:5173 (Vite `/api` proxy → backend)
+
+## Production build
 
 ```bash
-flutter run -d chrome
-```
-
-Giriş ekranında `v1.0.2 · http://localhost:8080/api/v1/proxy` görünmeli.
-
-## Railway deploy
-
-```bash
-flutter build web --release
-git add build/web lib server.js package.json
-git commit -m "build web v1.0.2"
-git push
-```
-
-Railway `npm install` + `npm start` çalıştırır.
-
-Giriş ekranında `v1.0.2 · /api/v1/proxy` görünmeli. Eski sürüm görüyorsanız build push edilmemiştir.
-
-## Local release test
-
-```bash
-flutter build web --release
 npm install
+npm run build
 npm start
 ```
 
 → http://localhost:8080
+
+## Railway deploy
+
+Railway Node projesi olarak algılar:
+
+1. **Build command:** `npm run build`
+2. **Start command:** `npm start`
+
+`server.js` static dosyaları (`dist/`) sunar ve `/api` isteklerini backend'e proxy eder — CORS sorunu olmaz.
+
+```bash
+git add .
+git commit -m "React rewrite v2.0.0"
+git push
+```
+
+Giriş ekranında `v2.0.0 · /api/v1` görünmeli.
 
 ## Backend
 
