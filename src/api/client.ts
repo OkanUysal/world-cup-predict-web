@@ -96,6 +96,13 @@ export const api = {
     return request<import('../types').UserProfile>('/me');
   },
 
+  updateNickname(nickname: string) {
+    return request<import('../types').UserProfile>('/me/nickname', {
+      method: 'PATCH',
+      body: JSON.stringify({ nickname }),
+    });
+  },
+
   getLeaderboard() {
     return request<import('../types').UserScore[]>('/leaderboard');
   },

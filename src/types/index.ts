@@ -7,6 +7,7 @@ export interface Channel {
 export interface UserProfile {
   id: string;
   name: string;
+  nickname?: string;
   role: 'user' | 'admin';
   channel_id?: string;
   channel?: Channel;
