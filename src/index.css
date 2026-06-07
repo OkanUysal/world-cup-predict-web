@@ -357,94 +357,146 @@ form select:focus {
 .event-list {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
 }
 
 .event-card {
   display: block;
-  padding: 10px 12px;
-  border-radius: var(--radius);
+  position: relative;
+  padding: 7px 9px;
+  border-radius: 8px;
   border: 1px solid var(--border-color);
   background: var(--bg-surface);
 }
 
 .event-card h3 {
-  font-size: 0.85rem;
-  line-height: 1.3;
-  margin-bottom: 2px;
+  font-size: 0.78rem;
+  line-height: 1.25;
+  margin-bottom: 1px;
+  padding-right: 4px;
 }
 
 .event-card-header {
   display: flex;
   justify-content: space-between;
+  align-items: flex-start;
+  gap: 6px;
+  margin-bottom: 3px;
+}
+
+.event-card-meta {
+  display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  margin-bottom: 4px;
+  gap: 4px;
+  min-width: 0;
+}
+
+.countdown-badge {
+  flex-shrink: 0;
+  font-family: ui-monospace, 'Cascadia Code', monospace;
+  font-size: 0.65rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  padding: 2px 5px;
+  border-radius: 5px;
+  background: var(--green-100);
+  color: var(--green-700);
+  letter-spacing: -0.02em;
+}
+
+.countdown-badge.urgent {
+  background: #fff3e0;
+  color: #e65100;
+}
+
+[data-theme='dark'] .countdown-badge.urgent {
+  background: #3a2a10;
+  color: #ffb74d;
+}
+
+.countdown-badge.critical {
+  background: var(--red-100);
+  color: var(--red-600);
+  animation: countdown-pulse 1s ease-in-out infinite;
+}
+
+@keyframes countdown-pulse {
+  50% {
+    opacity: 0.75;
+  }
 }
 
 .badge {
-  font-size: 0.65rem;
-  padding: 1px 6px;
+  font-size: 0.6rem;
+  padding: 1px 5px;
   border-radius: 999px;
   font-weight: 600;
 }
 
 .event-type {
-  font-size: 0.7rem;
+  font-size: 0.65rem;
 }
 
 .deadline {
-  font-size: 0.72rem;
-  margin-top: 2px;
+  font-size: 0.65rem;
+  margin-top: 1px;
 }
 
 .match-label {
-  font-size: 0.78rem;
+  font-size: 0.72rem;
   margin-bottom: 0;
 }
 
 .inline-prediction {
-  margin-top: 8px;
-  padding-top: 8px;
+  margin-top: 6px;
+  padding-top: 6px;
   border-top: 1px solid var(--border-color);
 }
 
 .inline-prediction .score-row.compact {
-  margin-bottom: 6px;
+  margin-bottom: 4px;
+  gap: 6px;
 }
 
 .inline-prediction .score-row.compact input {
-  padding: 6px;
-  font-size: 0.95rem;
+  padding: 4px;
+  font-size: 0.85rem;
+}
+
+.score-sep {
+  font-size: 1rem;
+  padding-bottom: 6px;
 }
 
 .team-select select {
-  padding: 7px 10px;
-  font-size: 0.85rem;
+  padding: 5px 8px;
+  font-size: 0.78rem;
 }
 
 .btn-save {
-  padding: 7px;
-  font-size: 0.85rem;
+  padding: 5px;
+  font-size: 0.78rem;
 }
 
 .card-hint {
-  margin-top: 8px;
-  padding-top: 8px;
-  font-size: 0.78rem;
+  margin-top: 6px;
+  padding-top: 6px;
+  font-size: 0.72rem;
 }
 
 .event-result {
-  margin-top: 6px;
-  padding: 5px 8px;
-  font-size: 0.78rem;
+  margin-top: 4px;
+  padding: 4px 6px;
+  font-size: 0.72rem;
   background: var(--result-bg);
   color: var(--result-text);
-  border-radius: 8px;
+  border-radius: 6px;
 }
 
 .my-prediction {
-  margin-top: 6px;
-  font-size: 0.78rem;
+  margin-top: 4px;
+  font-size: 0.72rem;
 }
 
 [data-card-size='large'] .event-list {
@@ -453,6 +505,7 @@ form select:focus {
 
 [data-card-size='large'] .event-card {
   padding: 16px;
+  border-radius: var(--radius);
 }
 
 [data-card-size='large'] .event-card h3 {
@@ -462,6 +515,12 @@ form select:focus {
 
 [data-card-size='large'] .event-card-header {
   margin-bottom: 8px;
+}
+
+[data-card-size='large'] .countdown-badge {
+  font-size: 0.75rem;
+  padding: 3px 8px;
+  border-radius: 6px;
 }
 
 [data-card-size='large'] .badge {
@@ -492,6 +551,11 @@ form select:focus {
   font-size: 1.1rem;
 }
 
+[data-card-size='large'] .score-sep {
+  font-size: 1.5rem;
+  padding-bottom: 10px;
+}
+
 [data-card-size='large'] .btn-save {
   padding: 10px;
   font-size: 1rem;
@@ -520,12 +584,17 @@ form select:focus {
 
 .score-team {
   display: block;
-  font-size: 0.7rem;
+  font-size: 0.65rem;
   color: var(--text-muted);
-  margin-bottom: 3px;
+  margin-bottom: 2px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+[data-card-size='large'] .score-team {
+  font-size: 0.75rem;
+  margin-bottom: 4px;
 }
 
 .inline-prediction .score-row.compact input {
@@ -723,8 +792,6 @@ form select:focus {
 }
 
 .score-sep {
-  font-size: 1.5rem;
-  padding-bottom: 10px;
   color: var(--gray-400);
 }
 

@@ -1,6 +1,11 @@
 import { FormEvent, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { api } from '../api/client';
+import {
+  countdownUrgency,
+  formatCountdown,
+  useCountdown,
+} from '../hooks/useCountdown';
 import type { EventWithPrediction } from '../types';
 import {
   eventTypeLabel,
@@ -27,6 +32,7 @@ export default function EventCard({
   const teams = Array.isArray(meta.teams) ? (meta.teams as string[]) : [];
   const canPredict = event.status === 'open';
   const isCompleted = event.status === 'completed';
+  const remaining = useCountdown(event.deadline, canPredict);
 
   const [homeScore, setHomeScore] = useState('');
   const [awayScore, setAwayScore] = useState('');
@@ -82,10 +88,20 @@ export default function EventCard({
   const body = (
     <>
       <div className="event-card-header">
-        <span className={`badge badge-${event.status}`}>
-          {statusLabel(event.status)}
-        </span>
-        <span className="event-type">{eventTypeLabel(event.type)}</span>
+        <div className="event-card-meta">
+          <span className={`badge badge-${event.status}`}>
+            {statusLabel(event.status)}
+          </span>
+          <span className="event-type">{eventTypeLabel(event.type)}</span>
+        </div>
+        {canPredict && (
+          <span
+            className={`countdown-badge ${countdownUrgency(remaining)}`}
+            title={`Son tarih: ${formatDate(event.deadline)}`}
+          >
+            {formatCountdown(remaining)}
+          </span>
+        )}
       </div>
 
       <h3>{event.title}</h3>
@@ -96,7 +112,10 @@ export default function EventCard({
         </p>
       )}
 
-      <p className="deadline">Son tarih: {formatDate(event.deadline)}</p>
+      <p className="deadline muted">
+        {canPredict ? 'Bitiş: ' : 'Son tarih: '}
+        {formatDate(event.deadline)}
+      </p>
 
       {isCompleted && event.result && (
         <p className="event-result">
