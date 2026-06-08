@@ -9,10 +9,14 @@ import {
 } from 'react';
 import {
   api,
+  clearAllAuth,
   clearSession,
+  getStoredCredentials,
   getStoredToken,
   getStoredUser,
   saveSession,
+  setSessionListener,
+  silentReLogin,
 } from '../api/client';
 import type { AuthResponse, UserProfile } from '../types';
 
@@ -54,18 +58,61 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(profile);
       saveSession(getStoredToken()!, profile);
     } catch {
-      // non-critical
+      // Sessiz yenileme init veya 401 handler'da yapılır
     }
+  }, []);
+
+  const restoreSession = useCallback(async () => {
+    const credentials = getStoredCredentials();
+    const existingToken = getStoredToken();
+
+    if (existingToken) {
+      try {
+        const profile = await api.getMe();
+        setToken(existingToken);
+        setUser(profile);
+        saveSession(existingToken, profile);
+        return;
+      } catch {
+        // Token geçersiz — kayıtlı bilgilerle yeniden giriş dene
+      }
+    }
+
+    if (credentials) {
+      const ok = await silentReLogin();
+      if (ok) {
+        await refreshProfile();
+        setToken(getStoredToken());
+        setUser(getStoredUser());
+        return;
+      }
+      clearSession();
+      setToken(null);
+      setUser(null);
+      return;
+    }
+
+    if (existingToken) {
+      clearSession();
+    }
+    setToken(null);
+    setUser(null);
+  }, [refreshProfile]);
+
+  useEffect(() => {
+    setSessionListener((newToken, newUser) => {
+      setToken(newToken);
+      setUser(newUser);
+    });
+    return () => setSessionListener(null);
   }, []);
 
   useEffect(() => {
     (async () => {
-      if (getStoredToken()) {
-        await refreshProfile();
-      }
+      await restoreSession();
       setLoading(false);
     })();
-  }, [refreshProfile]);
+  }, [restoreSession]);
 
   const login = useCallback(
     async (data: {
@@ -94,7 +141,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   );
 
   const logout = useCallback(() => {
-    clearSession();
+    clearAllAuth();
     setToken(null);
     setUser(null);
   }, []);

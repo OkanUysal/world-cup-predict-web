@@ -1,52 +1,39 @@
+import type { AuthResponse, UserProfile } from '../types';
+import {
+  getStoredCredentials,
+  getStoredToken,
+  saveCredentials,
+  saveSession,
+  type StoredCredentials,
+} from './authStorage';
+
 const API_BASE = '/api/v1';
 
-const TOKEN_KEY = 'wcp_token';
-const USER_KEY = 'wcp_user';
+export {
+  clearAllAuth,
+  clearCredentials,
+  clearSession,
+  getStoredCredentials,
+  getStoredToken,
+  getStoredUser,
+  saveCredentials,
+  saveSession,
+} from './authStorage';
 
-export function getStoredToken(): string | null {
-  return localStorage.getItem(TOKEN_KEY);
+type SessionListener = (token: string, user: UserProfile) => void;
+
+let sessionListener: SessionListener | null = null;
+let reloginPromise: Promise<boolean> | null = null;
+
+export function setSessionListener(listener: SessionListener | null) {
+  sessionListener = listener;
 }
 
-export function getStoredUser() {
-  const raw = localStorage.getItem(USER_KEY);
-  if (!raw) return null;
-  try {
-    return JSON.parse(raw);
-  } catch {
-    return null;
-  }
+function notifySession(token: string, user: UserProfile) {
+  sessionListener?.(token, user);
 }
 
-export function saveSession(token: string, user: unknown) {
-  localStorage.setItem(TOKEN_KEY, token);
-  localStorage.setItem(USER_KEY, JSON.stringify(user));
-}
-
-export function clearSession() {
-  localStorage.removeItem(TOKEN_KEY);
-  localStorage.removeItem(USER_KEY);
-}
-
-async function request<T>(
-  path: string,
-  options: RequestInit = {},
-): Promise<T> {
-  const token = getStoredToken();
-  const headers: Record<string, string> = {
-    Accept: 'application/json',
-    ...(options.headers as Record<string, string>),
-  };
-
-  if (options.body && !headers['Content-Type']) {
-    headers['Content-Type'] = 'application/json';
-  }
-
-  if (token && !path.includes('/auth/')) {
-    headers.Authorization = `Bearer ${token}`;
-  }
-
-  const res = await fetch(`${API_BASE}${path}`, { ...options, headers });
-
+async function parseResponse<T>(res: Response): Promise<T> {
   let data: unknown = null;
   const text = await res.text();
   if (text) {
@@ -63,10 +50,85 @@ async function request<T>(
       data && typeof data === 'object' && 'error' in data
         ? String((data as { error: string }).error)
         : `İstek başarısız (${res.status})`;
-    throw new Error(err);
+    const error = new Error(err) as Error & { status?: number };
+    error.status = res.status;
+    throw error;
   }
 
   return data as T;
+}
+
+async function authLogin(
+  body: StoredCredentials,
+): Promise<AuthResponse> {
+  const res = await fetch(`${API_BASE}/auth/login`, {
+    method: 'POST',
+    headers: {
+      Accept: 'application/json',
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      name: body.name,
+      password: body.password,
+      ...(body.channel_code ? { channel_code: body.channel_code } : {}),
+    }),
+  });
+  return parseResponse<AuthResponse>(res);
+}
+
+export async function silentReLogin(): Promise<boolean> {
+  const credentials = getStoredCredentials();
+  if (!credentials) return false;
+
+  if (!reloginPromise) {
+    reloginPromise = (async () => {
+      try {
+        const res = await authLogin(credentials);
+        saveSession(res.access_token, res.user);
+        notifySession(res.access_token, res.user);
+        return true;
+      } catch {
+        return false;
+      } finally {
+        reloginPromise = null;
+      }
+    })();
+  }
+
+  return reloginPromise;
+}
+
+type RequestOptions = RequestInit & { _retried?: boolean };
+
+async function request<T>(path: string, options: RequestOptions = {}): Promise<T> {
+  const token = getStoredToken();
+  const headers: Record<string, string> = {
+    Accept: 'application/json',
+    ...(options.headers as Record<string, string>),
+  };
+
+  if (options.body && !headers['Content-Type']) {
+    headers['Content-Type'] = 'application/json';
+  }
+
+  if (token && !path.includes('/auth/')) {
+    headers.Authorization = `Bearer ${token}`;
+  }
+
+  const res = await fetch(`${API_BASE}${path}`, { ...options, headers });
+
+  if (
+    res.status === 401 &&
+    !path.includes('/auth/') &&
+    !options._retried
+  ) {
+    const ok = await silentReLogin();
+    if (ok) {
+      return request<T>(path, { ...options, _retried: true });
+    }
+  }
+
+  return parseResponse<T>(res);
 }
 
 export const api = {
@@ -75,7 +137,12 @@ export const api = {
     password: string;
     channel_code?: string;
   }) {
-    return request<import('../types').AuthResponse>('/auth/login', {
+    saveCredentials({
+      name: body.name,
+      password: body.password,
+      channel_code: body.channel_code,
+    });
+    return request<AuthResponse>('/auth/login', {
       method: 'POST',
       body: JSON.stringify(body),
     });
@@ -86,18 +153,23 @@ export const api = {
     password: string;
     channel_code: string;
   }) {
-    return request<import('../types').AuthResponse>('/auth/register', {
+    saveCredentials({
+      name: body.name,
+      password: body.password,
+      channel_code: body.channel_code,
+    });
+    return request<AuthResponse>('/auth/register', {
       method: 'POST',
       body: JSON.stringify(body),
     });
   },
 
   getMe() {
-    return request<import('../types').UserProfile>('/me');
+    return request<UserProfile>('/me');
   },
 
   updateNickname(nickname: string) {
-    return request<import('../types').UserProfile>('/me/nickname', {
+    return request<UserProfile>('/me/nickname', {
       method: 'PATCH',
       body: JSON.stringify({ nickname }),
     });

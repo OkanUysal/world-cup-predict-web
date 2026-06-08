@@ -1,5 +1,6 @@
-import { FormEvent, useState } from 'react';
+import { FormEvent, useEffect, useState } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
+import { getStoredCredentials } from '../api/client';
 import { useAuth } from '../context/AuthContext';
 
 export default function AuthPage() {
@@ -12,6 +13,15 @@ export default function AuthPage() {
   const [name, setName] = useState('');
   const [password, setPassword] = useState('');
   const [channelCode, setChannelCode] = useState('');
+
+  useEffect(() => {
+    const saved = getStoredCredentials();
+    if (saved) {
+      setName(saved.name);
+      setPassword(saved.password);
+      setChannelCode(saved.channel_code ?? '');
+    }
+  }, []);
 
   if (!loading && token) {
     return <Navigate to="/events" replace />;
