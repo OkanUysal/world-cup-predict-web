@@ -6,7 +6,8 @@ import {
   formatCountdown,
   useCountdown,
 } from '../hooks/useCountdown';
-import type { EventWithPrediction } from '../types';
+import type { EventStatusFilter, EventWithPrediction } from '../types';
+import { channelPath } from '../utils/eventsNav';
 import {
   eventTypeLabel,
   formatChoice,
@@ -20,12 +21,14 @@ interface Props {
   item: EventWithPrediction;
   onUpdated: () => void;
   linkToChannel?: boolean;
+  listStatus?: EventStatusFilter;
 }
 
 export default function EventCard({
   item,
   onUpdated,
   linkToChannel = false,
+  listStatus = 'open',
 }: Props) {
   const { event, my_prediction } = item;
   const meta = event.metadata;
@@ -216,7 +219,7 @@ export default function EventCard({
   if (linkToChannel) {
     return (
       <Link
-        to={`/events/${event.id}/channel`}
+        to={channelPath(event.id, listStatus)}
         className="event-card event-card-link"
       >
         {body}

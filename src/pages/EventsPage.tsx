@@ -1,7 +1,9 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { api } from '../api/client';
 import EventCard from '../components/EventCard';
 import type { EventStatusFilter, EventWithPrediction } from '../types';
+import { parseEventStatus } from '../utils/eventsNav';
 
 const TABS: { key: EventStatusFilter; label: string }[] = [
   { key: 'open', label: 'Açık' },
@@ -10,11 +12,23 @@ const TABS: { key: EventStatusFilter; label: string }[] = [
 ];
 
 export default function EventsPage() {
-  const [status, setStatus] = useState<EventStatusFilter>('open');
+  const [searchParams, setSearchParams] = useSearchParams();
+  const status = parseEventStatus(searchParams.get('status'));
   const [events, setEvents] = useState<EventWithPrediction[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [onlyWithoutPrediction, setOnlyWithoutPrediction] = useState(false);
+
+  const setStatus = useCallback(
+    (next: EventStatusFilter) => {
+      if (next === 'open') {
+        setSearchParams({}, { replace: true });
+      } else {
+        setSearchParams({ status: next }, { replace: true });
+      }
+    },
+    [setSearchParams],
+  );
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -94,6 +108,7 @@ export default function EventsPage() {
             item={item}
             onUpdated={load}
             linkToChannel={status !== 'open'}
+            listStatus={status}
           />
         ))}
       </div>

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useParams, useSearchParams } from 'react-router-dom';
 import { api } from '../api/client';
 import type { EventDetailResponse, Prediction } from '../types';
 import {
@@ -10,9 +10,13 @@ import {
   pointsClass,
   statusLabel,
 } from '../utils/date';
+import { eventsListPath, parseEventStatus } from '../utils/eventsNav';
 
 export default function EventChannelPage() {
   const { id } = useParams<{ id: string }>();
+  const [searchParams] = useSearchParams();
+  const listStatus = parseEventStatus(searchParams.get('status'));
+  const backTo = eventsListPath(listStatus);
   const [detail, setDetail] = useState<EventDetailResponse | null>(null);
   const [predictions, setPredictions] = useState<Prediction[]>([]);
   const [loading, setLoading] = useState(true);
@@ -51,7 +55,7 @@ export default function EventChannelPage() {
   if (error || !detail) {
     return (
       <div className="page">
-        <Link to="/events" className="back-link">
+        <Link to={backTo} className="back-link">
           ← Geri
         </Link>
         <div className="error-box">{error || 'Event bulunamadı'}</div>
@@ -65,7 +69,7 @@ export default function EventChannelPage() {
 
   return (
     <div className="page">
-      <Link to="/events" className="back-link">
+      <Link to={backTo} className="back-link">
         ← Geri
       </Link>
 
