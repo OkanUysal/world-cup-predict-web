@@ -1,3 +1,12 @@
+function parseDate(iso: string): Date {
+  return new Date(iso);
+}
+
+function addHours(iso: string, hours: number): Date {
+  return new Date(parseDate(iso).getTime() + hours * 3_600_000);
+}
+
+/** Cihazın yerel saat diliminde tarih + saat */
 export function formatDate(iso: string): string {
   try {
     return new Intl.DateTimeFormat('tr-TR', {
@@ -6,11 +15,42 @@ export function formatDate(iso: string): string {
       year: 'numeric',
       hour: '2-digit',
       minute: '2-digit',
-      timeZone: 'UTC',
-    }).format(new Date(iso));
+    }).format(parseDate(iso));
   } catch {
     return iso;
   }
+}
+
+/** Cihazın yerel saat diliminde sadece saat */
+export function formatTime(iso: string | Date): string {
+  try {
+    const d = typeof iso === 'string' ? parseDate(iso) : iso;
+    return new Intl.DateTimeFormat('tr-TR', {
+      hour: '2-digit',
+      minute: '2-digit',
+    }).format(d);
+  } catch {
+    return String(iso);
+  }
+}
+
+/** Son tarih satırı; maç skorunda parantez içinde maç saati (deadline + 1 saat) */
+export function formatDeadline(
+  deadline: string,
+  options?: {
+    eventType?: string;
+    label?: 'bitis' | 'son_tarih';
+  },
+): string {
+  const prefix = options?.label === 'bitis' ? 'Bitiş' : 'Son tarih';
+  const dateStr = formatDate(deadline);
+
+  if (options?.eventType === 'match_score') {
+    const matchTime = formatTime(addHours(deadline, 1));
+    return `${prefix}: ${dateStr} (Maç: ${matchTime})`;
+  }
+
+  return `${prefix}: ${dateStr}`;
 }
 
 export function eventTypeLabel(type: string): string {

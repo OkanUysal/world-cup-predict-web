@@ -11,7 +11,7 @@ import { channelPath } from '../utils/eventsNav';
 import {
   eventTypeLabel,
   formatChoice,
-  formatDate,
+  formatDeadline,
   formatResult,
   pointsClass,
   statusLabel,
@@ -100,7 +100,10 @@ export default function EventCard({
         {canPredict && (
           <span
             className={`countdown-badge ${countdownUrgency(remaining)}`}
-            title={`Son tarih: ${formatDate(event.deadline)}`}
+            title={formatDeadline(event.deadline, {
+              eventType: event.type,
+              label: canPredict ? 'bitis' : 'son_tarih',
+            })}
           >
             {formatCountdown(remaining)}
           </span>
@@ -116,8 +119,10 @@ export default function EventCard({
       )}
 
       <p className="deadline muted">
-        {canPredict ? 'Bitiş: ' : 'Son tarih: '}
-        {formatDate(event.deadline)}
+        {formatDeadline(event.deadline, {
+          eventType: event.type,
+          label: canPredict ? 'bitis' : 'son_tarih',
+        })}
       </p>
 
       {isCompleted && event.result && (

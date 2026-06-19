@@ -5,7 +5,7 @@ import type { EventDetailResponse, Prediction } from '../types';
 import {
   eventTypeLabel,
   formatChoice,
-  formatDate,
+  formatDeadline,
   formatResult,
   pointsClass,
   statusLabel,
@@ -84,7 +84,9 @@ export default function EventChannelPage() {
             {String(meta.home_team)} vs {String(meta.away_team)}
           </p>
         )}
-        <p className="deadline">Son tarih: {formatDate(event.deadline)}</p>
+        <p className="deadline">
+          {formatDeadline(event.deadline, { eventType: event.type })}
+        </p>
       </header>
 
       {isCompleted && event.result && (
