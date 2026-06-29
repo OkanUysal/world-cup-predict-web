@@ -1023,6 +1023,32 @@ form select:focus {
   font-size: 0.95rem;
 }
 
+.leader-stats {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.leader-stat-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: rgba(0, 0, 0, 0.04);
+  color: var(--text-muted);
+  font-size: 0.72rem;
+  font-weight: 500;
+  padding: 1px 6px;
+  border-radius: 6px;
+  border: 1px solid var(--border-color);
+  line-height: 1.4;
+}
+
+[data-theme='dark'] .leader-stat-item {
+  background: rgba(255, 255, 255, 0.04);
+}
+
 .profile-card {
   text-align: center;
 }

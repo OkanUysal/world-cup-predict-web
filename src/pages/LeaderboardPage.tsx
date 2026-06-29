@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { api } from '../api/client';
 import type { UserScore } from '../types';
-import { formatDate } from '../utils/date';
 import { useAuth } from '../context/AuthContext';
 
 export default function LeaderboardPage() {
@@ -51,7 +50,14 @@ export default function LeaderboardPage() {
               <span className="rank">{i + 1}</span>
               <div className="leader-info">
                 <strong>{s.user_name}</strong>
-                <span className="muted">{formatDate(s.updated_at)}</span>
+                <div className="leader-stats">
+                  <span className="leader-stat-item" title="Tam Skor">
+                    🎯 {s.exact_score_count ?? 0} Tam
+                  </span>
+                  <span className="leader-stat-item" title="Taraf Tahmini">
+                    ⚽ {s.correct_outcome_count ?? 0} Taraf
+                  </span>
+                </div>
               </div>
               <span className="points">{s.total_points} puan</span>
             </li>

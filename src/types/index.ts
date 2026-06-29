@@ -58,6 +58,8 @@ export interface UserScore {
   channel_id: string;
   total_points: number;
   updated_at: string;
+  exact_score_count?: number;
+  correct_outcome_count?: number;
 }
 
 export type EventStatusFilter = 'open' | 'pending' | 'completed';
