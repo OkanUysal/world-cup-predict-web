@@ -1049,6 +1049,135 @@ form select:focus {
   background: rgba(255, 255, 255, 0.04);
 }
 
+.btn-detail {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: 8px;
+  background: var(--gray-100);
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.btn-detail:hover {
+  background: var(--green-100);
+  color: var(--green-700);
+  transform: scale(1.05);
+}
+
+.me .btn-detail {
+  background: rgba(0, 0, 0, 0.06);
+}
+
+[data-theme='dark'] .btn-detail:hover {
+  background: var(--green-900);
+  color: #fff;
+}
+
+.modal-prediction-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.modal-prediction-item {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+}
+
+.modal-prediction-event {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.modal-event-meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.modal-prediction-event h4 {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.modal-event-result {
+  font-size: 0.78rem;
+  background: var(--result-bg);
+  color: var(--result-text);
+  padding: 4px 8px;
+  border-radius: 4px;
+  display: inline-block;
+  align-self: flex-start;
+  margin-top: 2px;
+}
+
+.modal-prediction-comparison {
+  display: flex;
+  gap: 12px;
+  border-top: 1px solid var(--border-color);
+  padding-top: 10px;
+}
+
+.comparison-col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.col-label {
+  font-size: 0.72rem;
+  color: var(--gray-600);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+[data-theme='dark'] .col-label {
+  color: var(--gray-400);
+}
+
+.col-val {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.col-val.points-won {
+  color: var(--green-700);
+}
+
+[data-theme='dark'] .col-val.points-won {
+  color: var(--green-500);
+}
+
+.col-val.points-zero {
+  color: var(--red-600);
+}
+
+[data-theme='dark'] .col-val.points-zero {
+  color: var(--red-600);
+}
+
+.col-points {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--text-muted);
+}
+
 .profile-card {
   text-align: center;
 }

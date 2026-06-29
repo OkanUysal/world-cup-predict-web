@@ -179,6 +179,10 @@ export const api = {
     return request<import('../types').UserScore[]>('/leaderboard');
   },
 
+  getUserPredictions(userId: string) {
+    return request<import('../types').UserPredictionResponse[]>(`/users/${userId}/predictions`);
+  },
+
   getEvents(status: import('../types').EventStatusFilter) {
     return request<import('../types').EventWithPrediction[]>(
       `/events?status=${status}`,

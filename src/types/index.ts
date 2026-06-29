@@ -63,3 +63,9 @@ export interface UserScore {
 }
 
 export type EventStatusFilter = 'open' | 'pending' | 'completed';
+
+export interface UserPredictionResponse {
+  event: Event;
+  target_prediction?: Prediction;
+  my_prediction?: Prediction;
+}
