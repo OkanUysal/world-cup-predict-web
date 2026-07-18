@@ -82,7 +82,7 @@ export default function RulesModal({ onClose }: Props) {
             <h3>İkinci</h3>
             <p>Finali kaybeden takımı tahmin et.</p>
             <p>
-              <strong>5 puan</strong> — Doğru · <strong>0 puan</strong> —
+              <strong>6 puan</strong> — Doğru · <strong>0 puan</strong> —
               Yanlış
             </p>
           </section>
@@ -91,7 +91,7 @@ export default function RulesModal({ onClose }: Props) {
             <h3>Üçüncü</h3>
             <p>3.’lük maçını kazanan takımı tahmin et.</p>
             <p>
-              <strong>3 puan</strong> — Doğru · <strong>0 puan</strong> —
+              <strong>4 puan</strong> — Doğru · <strong>0 puan</strong> —
               Yanlış
             </p>
           </section>
